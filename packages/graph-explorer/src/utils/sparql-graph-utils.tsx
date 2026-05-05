@@ -29,22 +29,23 @@ export const getNameAndLabelsFromRecords = (
 
   const firstByPredicate = new Map<string, string>();
   const labels: string[] = [];
+  const stripBrackets = (s: string) => s.startsWith("<") && s.endsWith(">") ? s.slice(1, -1) : s;
+  const normalizedLabelsPredicate = stripBrackets(labelsPredicate ?? "");
 
   for (const record of records) {
     const predStr = record.get(predKey).toString();
     const objStr = record.get(objKey).toString();
-
     if (!firstByPredicate.has(predStr)) {
       firstByPredicate.set(predStr, objStr);
     }
-    if (predStr === labelsPredicate) {
+    if (predStr === normalizedLabelsPredicate) {
       labels.push(objStr);
     }
   }
 
   let name = formatGraphValue(node, prefixes);
   for (const predicate of namePredicates) {
-    const newName = firstByPredicate.get(predicate);
+    const newName = firstByPredicate.get(stripBrackets(predicate));
     if (newName != null && newName !== "") {
       name = newName;
       break;
@@ -241,7 +242,8 @@ export type TextSearchItem = {
 export const textSearchNodes = async (
   session: Session, searchText: string, searchPredicates: string[], limit: number = 50
 ): Promise<TextSearchItem[]> => {
-  const valuesStatement = `VALUES ?predicate { ${searchPredicates.map(iri => `<${iri}>`).join(" ")} }`;
+  const stripBrackets = (s: string) => s.startsWith("<") && s.endsWith(">") ? s.slice(1, -1) : s;
+  const valuesStatement = `VALUES ?predicate { ${searchPredicates.map(iri => `<${stripBrackets(iri)}>`).join(" ")} }`;
   const query = `
     SELECT ?subject ?predicate ?object
     WHERE {

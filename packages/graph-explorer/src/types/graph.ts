@@ -61,3 +61,7 @@ export type NodeLabelBox = {
 };
 
 export type GraphVisData = GraphData<GraphVisNode, GraphVisEdge>;
+
+export type MDBGraphData = GraphVisData;
+export type MDBGraphNode = GraphVisNode;
+export type MDBGraphLink = GraphVisEdge;
